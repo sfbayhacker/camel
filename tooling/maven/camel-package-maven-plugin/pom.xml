@@ -196,7 +196,12 @@
         <dependency>
           <groupId>javax.annotation</groupId>
           <artifactId>javax.annotation-api</artifactId>
-          <version>1.3</version>
+          <version>${annotation-api-version}</version>
+        </dependency>
+        <dependency>
+          <groupId>javax.xml.bind</groupId>
+          <artifactId>jaxb-api</artifactId>
+          <version>${jaxb-version}</version>
         </dependency>
       </dependencies>
     </profile>
