@@ -22,8 +22,10 @@ import java.io.InputStream;
 
 import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.util.ExchangeHelper;
 import org.apache.camel.util.GZIPHelper;
+import org.apache.camel.util.ObjectHelper;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
@@ -67,7 +69,17 @@ public final class HttpEntityConverter {
             entity = new InputStreamEntity(stream, stream instanceof ByteArrayInputStream
                 ? stream.available() != 0 ? stream.available() : -1 : -1);
         } else {
-            entity = new InputStreamEntity(in, -1);
+//            entity = new InputStreamEntity(in, -1);//-- original code
+        	//****
+        	Message inMessage = exchange.getIn();
+        	String length = inMessage.getHeader(Exchange.CONTENT_LENGTH, String.class);
+        	
+        	if (ObjectHelper.isEmpty(length)) {
+        		entity = new InputStreamEntity(in, -1);
+        	} else {
+        		entity = new InputStreamEntity(in, Long.parseLong(length));
+        	}
+        	//****
         }
         if (exchange != null) {
             String contentEncoding = exchange.getIn().getHeader(Exchange.CONTENT_ENCODING, String.class);
@@ -83,7 +95,7 @@ public final class HttpEntityConverter {
         if (exchange != null && !exchange.getProperty(Exchange.SKIP_GZIP_ENCODING, Boolean.FALSE, Boolean.class)) {
             String contentEncoding = exchange.getIn().getHeader(Exchange.CONTENT_ENCODING, String.class);
             InputStream stream = GZIPHelper.compressGzip(contentEncoding, data);
-            entity = new InputStreamEntity(stream, stream instanceof ByteArrayInputStream
+            entity = new InputStreamEntity(stream, stream instanceof ByteArrayInputStream 
                 ? stream.available() != 0 ? stream.available() : -1 : -1);
         } else {
             // create the Repeatable HttpEntity
